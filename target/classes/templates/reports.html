@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Reports')}"></head>
+<body>
+<nav th:replace="~{fragments :: sidebar('reports')}"></nav>
+<main class="content">
+  <h3 class="mb-3">Reports</h3>
+  <form method="get" th:action="@{/reports}" class="card card-body mb-3"><div class="row g-2 align-items-end">
+    <div class="col-md-3"><label class="form-label small">Report</label><select name="type" class="form-select"><option th:each="t : ${types}" th:value="${t.key}" th:text="${t.value}" th:selected="${t.key == type}"></option></select></div>
+    <div class="col-md-2"><label class="form-label small">From</label><input type="date" name="from" th:value="${from}" class="form-control"></div>
+    <div class="col-md-2"><label class="form-label small">To</label><input type="date" name="to" th:value="${to}" class="form-control"></div>
+    <div class="col-md-2"><label class="form-label small">Category</label><select name="category" class="form-select"><option value="">All</option><option th:each="c : ${categories}" th:value="${c}" th:text="${c}" th:selected="${c == category}"></option></select></div>
+    <div class="col-md-2"><label class="form-label small">Asset (lifecycle report)</label><select name="assetId" class="form-select"><option value="">All</option><option th:each="a : ${assets}" th:value="${a.id}" th:text="${a.name}" th:selected="${a.id == assetId}"></option></select></div>
+    <div class="col-md-1"><button class="btn btn-primary w-100">Go</button></div>
+  </div></form>
+  <div class="card"><div class="card-body">
+    <div class="d-flex justify-content-between mb-2"><h5 th:text="${report.title()}"></h5>
+      <a class="btn btn-outline-success btn-sm" th:href="@{/reports/export(type=${type},from=${from},to=${to},category=${category},assetId=${assetId})}"><i class="bi bi-filetype-csv"></i> Export CSV</a></div>
+    <div class="table-responsive"><table class="table table-sm table-striped">
+      <thead><tr><th th:each="h : ${report.headers()}" th:text="${h}"></th></tr></thead>
+      <tbody><tr th:if="${#lists.isEmpty(report.rows())}"><td th:colspan="${#lists.size(report.headers())}" class="text-center text-muted">No data for the selected filters.</td></tr>
+        <tr th:each="row : ${report.rows()}"><td th:each="c : ${row}" th:text="${c}"></td></tr></tbody>
+    </table></div></div></div>
+</main>
+<th:block th:replace="~{fragments :: scripts}"></th:block>
+</body></html>

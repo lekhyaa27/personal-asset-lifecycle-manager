@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Asset Details')}"></head>
+<body>
+<nav th:replace="~{fragments :: sidebar('assets')}"></nav>
+<main class="content">
+  <div th:replace="~{fragments :: flash}"></div>
+  <div class="d-flex justify-content-between align-items-start mb-3">
+    <div><h3 class="mb-1" th:text="${asset.name}">Asset</h3><span th:replace="~{fragments :: badge(${asset.status})}"></span> <span class="text-muted small ms-2">Asset ID: <span th:text="${asset.id}"></span></span></div>
+    <div class="d-flex gap-2 flex-wrap">
+      <a class="btn btn-outline-secondary" th:href="@{/assets/{id}/edit(id=${asset.id})}"><i class="bi bi-pencil"></i> Edit</a>
+      <a class="btn btn-outline-warning" th:href="@{/maintenance(assetId=${asset.id})}"><i class="bi bi-tools"></i> Maintenance</a>
+      <a class="btn btn-outline-info" th:href="@{/repairs(assetId=${asset.id})}"><i class="bi bi-wrench-adjustable"></i> Repair</a>
+      <a class="btn btn-outline-primary" th:href="@{/upgrades(assetId=${asset.id})}"><i class="bi bi-arrow-up-circle"></i> Upgrade</a>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-3">
+    <div class="col-lg-8"><div class="card h-100"><div class="card-body"><h6>Basic information</h6>
+      <dl class="row mb-0">
+        <dt class="col-sm-4">Category</dt><dd class="col-sm-8" th:text="${asset.category}"></dd>
+        <dt class="col-sm-4">Brand / Model</dt><dd class="col-sm-8"><span th:text="${asset.brand}"></span> <span th:text="${asset.model}"></span></dd>
+        <dt class="col-sm-4">Serial number</dt><dd class="col-sm-8" th:text="${asset.serialNumber}"></dd>
+        <dt class="col-sm-4">Purchase</dt><dd class="col-sm-8"><span th:text="${asset.purchaseDate}"></span> at <span th:text="${asset.purchaseLocation}"></span></dd>
+        <dt class="col-sm-4">Condition</dt><dd class="col-sm-8"><span th:replace="~{fragments :: badge(${asset.assetCondition})}"></span></dd>
+        <dt class="col-sm-4">Useful life</dt><dd class="col-sm-8"><span th:text="${asset.usefulLifeYears != null} ? ${asset.usefulLifeYears} + ' years' : 'Not set'"></span></dd>
+        <dt class="col-sm-4">Description</dt><dd class="col-sm-8" th:text="${asset.description}"></dd>
+        <dt class="col-sm-4">Notes</dt><dd class="col-sm-8 mb-0" th:text="${asset.notes}"></dd>
+      </dl></div></div></div>
+    <div class="col-lg-4"><div class="card h-100"><div class="card-body text-center"><h6>QR Code</h6>
+      <img th:src="@{/assets/{id}/qr(id=${asset.id})}" class="img-fluid" alt="QR code" style="max-width:180px">
+      <div class="mt-2 d-grid gap-2">
+        <a class="btn btn-sm btn-primary" th:href="@{/a/{t}/pdf(t=${asset.publicToken})}"><i class="bi bi-file-earmark-pdf"></i> Download details (PDF)</a>
+        <a class="btn btn-sm btn-outline-primary" th:href="@{/assets/{id}/qr(id=${asset.id},download=true)}"><i class="bi bi-qr-code"></i> Download QR image</a>
+        <a class="btn btn-sm btn-outline-secondary" th:href="@{/a/{t}(t=${asset.publicToken})}" target="_blank"><i class="bi bi-eye"></i> Preview scan page</a></div>
+      <div class="small text-muted mt-2">Scanning shows a read-only summary. No login needed.</div>
+      <hr><form method="post" th:action="@{/assets/{id}/status(id=${asset.id})}" class="text-start">
+        <label class="form-label small">Change lifecycle status</label>
+        <select name="status" class="form-select form-select-sm mb-2"><option th:each="s : ${statuses}" th:value="${s}" th:text="${s}" th:selected="${s == asset.status}"></option></select>
+        <input name="note" class="form-control form-control-sm mb-2" placeholder="Note (optional)">
+        <button class="btn btn-sm btn-primary w-100">Update status</button></form>
+    </div></div></div>
+  </div>
+
+  <div class="row g-3 mb-3">
+    <div class="col-md-6"><div class="card h-100"><div class="card-body"><h6>Warranty</h6>
+      <p class="text-muted" th:if="${warranty == null}">No warranty recorded. <a th:href="@{/warranty}">Add one</a></p>
+      <dl class="row mb-0" th:if="${warranty != null}">
+        <dt class="col-sm-5">Provider</dt><dd class="col-sm-7" th:text="${warranty.provider}"></dd>
+        <dt class="col-sm-5">Start</dt><dd class="col-sm-7" th:text="${warranty.startDate}"></dd>
+        <dt class="col-sm-5">End</dt><dd class="col-sm-7" th:text="${warranty.endDate}"></dd>
+        <dt class="col-sm-5">Status</dt><dd class="col-sm-7"><span th:replace="~{fragments :: badge(${ws.status()})}"></span></dd>
+        <dt class="col-sm-5">Days remaining</dt><dd class="col-sm-7 mb-0" th:text="${ws.days() != null and ws.days() >= 0} ? ${ws.days()} : '0'"></dd>
+      </dl></div></div></div>
+    <div class="col-md-6"><div class="card h-100"><div class="card-body"><h6>Insurance</h6>
+      <p class="text-muted" th:if="${insurance == null}">No insurance recorded. <a th:href="@{/insurance}">Add one</a></p>
+      <dl class="row mb-0" th:if="${insurance != null}">
+        <dt class="col-sm-5">Provider</dt><dd class="col-sm-7" th:text="${insurance.provider}"></dd>
+        <dt class="col-sm-5">Policy number</dt><dd class="col-sm-7" th:text="${insurance.policyNumber}"></dd>
+        <dt class="col-sm-5">Start</dt><dd class="col-sm-7" th:text="${insurance.startDate}"></dd>
+        <dt class="col-sm-5">End</dt><dd class="col-sm-7" th:text="${insurance.endDate}"></dd>
+        <dt class="col-sm-5">Status</dt><dd class="col-sm-7 mb-0"><span th:replace="~{fragments :: badge(${is.status()})}"></span></dd>
+      </dl></div></div></div>
+  </div>
+
+  <div class="row g-3 mb-3">
+    <div class="col-md-6"><div class="card h-100"><div class="card-body"><h6>Financial &amp; depreciation</h6>
+      <table class="table table-sm mb-2">
+        <tr><td>Purchase price</td><td class="text-end"><span th:replace="~{fragments :: money(${costs.purchase()})}"></span></td></tr>
+        <tr><td>Maintenance expenses</td><td class="text-end"><span th:replace="~{fragments :: money(${costs.maintenance()})}"></span></td></tr>
+        <tr><td>Repair expenses</td><td class="text-end"><span th:replace="~{fragments :: money(${costs.repair()})}"></span></td></tr>
+        <tr><td>Upgrade expenses</td><td class="text-end"><span th:replace="~{fragments :: money(${costs.upgrade()})}"></span></td></tr>
+        <tr class="fw-bold"><td>Total lifecycle cost</td><td class="text-end"><span th:replace="~{fragments :: money(${costs.total()})}"></span></td></tr>
+      </table>
+      <table class="table table-sm mb-1">
+        <tr><td>Annual depreciation</td><td class="text-end"><span th:replace="~{fragments :: money(${dep.annual()})}"></span></td></tr>
+        <tr><td>Accumulated depreciation</td><td class="text-end"><span th:replace="~{fragments :: money(${dep.accumulated()})}"></span></td></tr>
+        <tr class="fw-bold"><td>Current estimated value</td><td class="text-end"><span th:replace="~{fragments :: money(${disposed ? 0 : dep.current()})}"></span></td></tr>
+      </table><div class="small text-muted" th:text="${dep.note()}"></div></div></div></div>
+    <div class="col-md-6"><div class="card h-100"><div class="card-body"><h6>Health score</h6>
+      <div class="d-flex align-items-center gap-3 mb-2"><span class="display-6" th:text="${health.score()}">0</span><span>/ 100</span><span th:replace="~{fragments :: badge(${health.status()})}"></span></div>
+      <ul class="small mb-3"><li th:each="r : ${health.reasons()}" th:text="${r}"></li></ul>
+      <h6>Repair or replace?</h6>
+      <p class="fw-bold mb-1 text-primary" th:text="${rec.verdict()}"></p>
+      <ul class="small mb-1"><li th:each="r : ${rec.reasons()}" th:text="${r}"></li></ul>
+      <div class="small text-muted">Rule-based suggestion, not an AI prediction.</div></div></div></div>
+  </div>
+
+  <div class="card mb-3"><div class="card-body"><h6>Maintenance, repairs &amp; upgrades</h6>
+    <div class="row g-3">
+      <div class="col-md-4"><div class="fw-semibold small mb-1">Maintenance</div><p class="small text-muted" th:if="${#lists.isEmpty(maint)}">None</p>
+        <ul class="small ps-3"><li th:each="x : ${maint}"><span th:text="${x.maintenanceDate}"></span> - <span th:text="${x.maintenanceType}"></span> (<span th:replace="~{fragments :: money(${x.cost})}"></span>)</li></ul></div>
+      <div class="col-md-4"><div class="fw-semibold small mb-1">Repairs</div><p class="small text-muted" th:if="${#lists.isEmpty(repairs)}">None</p>
+        <ul class="small ps-3"><li th:each="x : ${repairs}"><span th:text="${x.repairDate}"></span> - <span th:text="${x.problemDescription}"></span> [<span th:text="${x.status}"></span>] (<span th:replace="~{fragments :: money(${x.cost})}"></span>)</li></ul></div>
+      <div class="col-md-4"><div class="fw-semibold small mb-1">Upgrades</div><p class="small text-muted" th:if="${#lists.isEmpty(upgrades)}">None</p>
+        <ul class="small ps-3"><li th:each="x : ${upgrades}"><span th:text="${x.upgradeDate}"></span> - <span th:text="${x.description}"></span> (<span th:replace="~{fragments :: money(${x.cost})}"></span>)</li></ul></div>
+    </div></div></div>
+
+  <div class="card mb-3"><div class="card-body"><h6>Documents</h6>
+    <form method="post" enctype="multipart/form-data" th:action="@{/assets/{id}/documents(id=${asset.id})}" class="row g-2 mb-3">
+      <div class="col-md-3"><select name="docType" class="form-select"><option th:each="t : ${docTypes}" th:value="${t}" th:text="${t}"></option></select></div>
+      <div class="col-md-6"><input type="file" name="file" class="form-control" accept=".pdf,.png,.jpg,.jpeg" required></div>
+      <div class="col-md-3"><button class="btn btn-outline-primary w-100"><i class="bi bi-upload"></i> Upload (PDF/PNG/JPG, max 5 MB)</button></div>
+    </form>
+    <p class="text-muted small" th:if="${#lists.isEmpty(docs)}">No documents uploaded.</p>
+    <ul class="list-group"><li class="list-group-item d-flex justify-content-between align-items-center" th:each="d : ${docs}">
+      <span><span class="badge bg-secondary" th:text="${d.docType}"></span> <a th:href="@{/documents/{id}(id=${d.id})}" th:text="${d.originalName}"></a></span>
+      <form method="post" th:action="@{/documents/{id}/delete(id=${d.id})}" data-confirm="Delete this document?"><button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button></form></li></ul>
+  </div></div>
+
+  <div class="card" id="timeline"><div class="card-body"><h6 class="mb-3">Lifecycle history</h6>
+    <ul class="timeline"><li th:each="h : ${history}">
+      <div class="small text-muted" th:text="${#temporals.format(h.eventTime,'dd MMM yyyy HH:mm')}"></div>
+      <span class="badge bg-secondary" th:text="${h.eventType}"></span> <span th:text="${h.description}"></span></li></ul>
+  </div></div>
+</main>
+<th:block th:replace="~{fragments :: scripts}"></th:block>
+</body></html>
